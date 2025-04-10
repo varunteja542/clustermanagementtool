@@ -1,9 +1,10 @@
+// Fetch clusters from backend and display as buttons.
 fetch("/clusters")
   .then(res => res.json())
-  .then(clusters => {
+  .then(data => {
     const div = document.getElementById("clusters");
     div.innerHTML = "<h2>Select a Cluster:</h2>";
-    clusters.forEach(c => {
+    data.clusters.forEach(c => {
       const btn = document.createElement("button");
       btn.innerText = c.name;
       btn.onclick = () => loadNodes(c.id);
@@ -14,13 +15,14 @@ fetch("/clusters")
 function loadNodes(clusterId) {
   fetch(`/clusters/${clusterId}/nodes`)
     .then(res => res.json())
-    .then(nodes => {
+    .then(data => {
       const nodeDiv = document.getElementById("nodes");
       nodeDiv.innerHTML = `<h2>Nodes in Cluster ${clusterId}</h2>`;
-      nodes.forEach(n => {
+      data.nodes.forEach(n => {
         const el = document.createElement("div");
+        el.className = "node";
         el.innerHTML = `
-          <b>Node:</b> ${n.id} — <b>Status:</b> ${n.status} 
+          <strong>Node:</strong> ${n.id} — <strong>Status:</strong> ${n.status}
           <button onclick="viewActions('${n.id}')">View Actions</button>
           <button onclick="deleteNode(${clusterId}, '${n.id}')">Delete</button>
         `;
@@ -38,7 +40,7 @@ function deleteNode(clusterId, nodeId) {
 function viewActions(nodeId) {
   fetch(`/nodes/${nodeId}/actions`)
     .then(res => res.json())
-    .then(actions => {
-      alert(`Actions for ${nodeId}: ${JSON.stringify(actions)}`);
+    .then(data => {
+      alert(`Actions for ${nodeId}: ${JSON.stringify(data.actions)}`);
     });
 }
