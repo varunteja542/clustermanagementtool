@@ -2,7 +2,7 @@ mod handlers;
 mod models;
 
 use axum::{
-    routing::{get, post, delete},
+    routing::{get, delete, post},
     Router,
 };
 use std::net::SocketAddr;
@@ -17,10 +17,8 @@ async fn main() {
         .route("/", get(handlers::serve_frontend));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    println!("Running on {}", addr);
+    println!("Running on http://{}", addr);
 
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
