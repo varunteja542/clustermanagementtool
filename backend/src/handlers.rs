@@ -23,14 +23,15 @@ pub async fn delete_node(Path((cid, nid)): Path<(u32, String)>) -> Json<serde_js
     Json(json!({ "message": format!("Node {} deleted from cluster {}", nid, cid) }))
 }
 
-pub async fn get_node_actions(Path(_id): Path<String>) -> Json<serde_json::Value> {
+pub async fn get_node_actions(Path(id): Path<String>) -> Json<serde_json::Value> {
     Json(json!([
-        { "action": "started", "time": "2025-04-10T12:00:00Z" }
+        { "action": "started", "time": "2025-04-10T12:00:00Z" },
+        { "action": "restarted", "time": "2025-04-10T14:00:00Z" }
     ]))
 }
 
 pub async fn serve_frontend() -> Html<String> {
     let html = std::fs::read_to_string("frontend/index.html")
-        .unwrap_or_else(|e| format!("Failed to load index.html: {}", e));
+        .unwrap_or_else(|e| format!("Could not load frontend: {}", e));
     Html(html)
 }
