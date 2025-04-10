@@ -1,3 +1,4 @@
+// On page load, fetch the clusters
 fetch("/clusters")
   .then(res => res.json())
   .then(clusters => {
@@ -20,7 +21,7 @@ function loadNodes(clusterId) {
       nodes.forEach(n => {
         const el = document.createElement("div");
         el.innerHTML = `
-          <b>Node:</b> ${n.id} — <b>Status:</b> ${n.status} 
+          <b>Node:</b> ${n.id} — <b>Status:</b> ${n.status}
           <button onclick="viewActions('${n.id}')">View Actions</button>
           <button onclick="deleteNode(${clusterId}, '${n.id}')">Delete</button>
         `;
