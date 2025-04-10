@@ -3,9 +3,8 @@ use axum::{
     Router,
 };
 use tower_http::services::ServeDir;
-// Import ServiceExt from Tower (enabled via features)
+// Import ServiceExt so that map_request becomes available.
 use tower::util::ServiceExt;
-// Import Hyper types
 use hyper::{Body, Request, Server};
 
 mod handlers;
@@ -13,11 +12,13 @@ mod models;
 
 #[tokio::main]
 async fn main() {
-    // Wrap ServeDir for serving the "frontend" directory and map the request type.
+    // Create a static file service for the "frontend" directory.
+    // We convert the incoming Axum request (with axum::body::Body) into a hyper::Request.
     let static_service = get_service(ServeDir::new("frontend"))
         .map_request(|req: axum::http::Request<axum::body::Body>| {
+            // Decompose the Axum request into its parts and body.
             let (parts, body) = req.into_parts();
-            // Convert to a Hyper request (axum::body::Body is by default hyper::Body)
+            // Rebuild a hyper request using those parts.
             Request::from_parts(parts, body)
         })
         .handle_error(|err: std::io::Error| async move {
@@ -27,7 +28,7 @@ async fn main() {
             )
         });
 
-    // Build the router with API endpoints and the static file service.
+    // Build the application router.
     let app = Router::new()
         .route("/", get(handlers::serve_frontend))
         .route("/clusters", get(handlers::get_clusters))
@@ -35,12 +36,13 @@ async fn main() {
         .route("/clusters/:id/nodes", post(handlers::register_node))
         .route("/clusters/:cid/nodes/:nid", delete(handlers::delete_node))
         .route("/nodes/:id/actions", get(handlers::get_node_actions))
+        // Mount the static service under /frontend.
         .nest_service("/frontend", static_service);
 
     let addr = "0.0.0.0:3000".parse().unwrap();
     println!("Listening on {}", addr);
 
-    // Use hyper::Server to run the app.
+    // Run the app using hyper's Server.
     Server::bind(&addr)
         .serve(app.into_make_service())
         .await
