@@ -3,21 +3,22 @@ use axum::{
     Router,
 };
 use tower_http::services::ServeDir;
-// Import the trait so we have access to `map_request`
+// Import ServiceExt from Tower (enabled via features)
 use tower::util::ServiceExt;
+// Import Hyper types
+use hyper::{Body, Request, Server};
 
 mod handlers;
 mod models;
 
 #[tokio::main]
 async fn main() {
-    // Wrap ServeDir and convert the request type.
+    // Wrap ServeDir for serving the "frontend" directory and map the request type.
     let static_service = get_service(ServeDir::new("frontend"))
         .map_request(|req: axum::http::Request<axum::body::Body>| {
-            // Break the request into parts.
             let (parts, body) = req.into_parts();
-            // Create a new request using the same parts and body.
-            axum::http::Request::from_parts(parts, body)
+            // Convert to a Hyper request (axum::body::Body is by default hyper::Body)
+            Request::from_parts(parts, body)
         })
         .handle_error(|err: std::io::Error| async move {
             (
@@ -26,7 +27,7 @@ async fn main() {
             )
         });
 
-    // Build our application with API routes.
+    // Build the router with API endpoints and the static file service.
     let app = Router::new()
         .route("/", get(handlers::serve_frontend))
         .route("/clusters", get(handlers::get_clusters))
@@ -39,8 +40,8 @@ async fn main() {
     let addr = "0.0.0.0:3000".parse().unwrap();
     println!("Listening on {}", addr);
 
-    // Use hyper::Server as Axum no longer exports a Server directly.
-    hyper::Server::bind(&addr)
+    // Use hyper::Server to run the app.
+    Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
