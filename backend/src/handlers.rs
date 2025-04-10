@@ -24,7 +24,6 @@ pub async fn delete_node(Path((cid, nid)): Path<(u32, String)>) -> Json<serde_js
 }
 
 pub async fn get_node_actions(Path(_id): Path<String>) -> Json<serde_json::Value> {
-    // Return a list of actions for a node (example data)
     Json(json!([
         { "action": "started", "time": "2025-04-10T12:00:00Z" },
         { "action": "restarted", "time": "2025-04-10T14:00:00Z" }
