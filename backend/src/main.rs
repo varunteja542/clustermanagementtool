@@ -3,24 +3,21 @@ use axum::{
     Router,
 };
 use tower_http::services::ServeDir;
-use hyper::Body;
-use http::Request; // From the http crate
+// Import the trait so we have access to `map_request`
+use tower::util::ServiceExt;
 
 mod handlers;
 mod models;
 
 #[tokio::main]
 async fn main() {
-    // Wrap ServeDir and convert request types.
+    // Wrap ServeDir and convert the request type.
     let static_service = get_service(ServeDir::new("frontend"))
-        // Convert an Axum request (with axum::body::Body) into one with hyper::Body.
         .map_request(|req: axum::http::Request<axum::body::Body>| {
-            // Break the request into its parts.
+            // Break the request into parts.
             let (parts, body) = req.into_parts();
-            // Create a new request using the same parts and the same body.
-            // Since axum::body::Body is an alias for hyper::Body in default configurations, this is a no‐op,
-            // but this explicit conversion helps satisfy the trait bounds.
-            Request::from_parts(parts, body)
+            // Create a new request using the same parts and body.
+            axum::http::Request::from_parts(parts, body)
         })
         .handle_error(|err: std::io::Error| async move {
             (
@@ -29,7 +26,7 @@ async fn main() {
             )
         });
 
-    // Build our application router.
+    // Build our application with API routes.
     let app = Router::new()
         .route("/", get(handlers::serve_frontend))
         .route("/clusters", get(handlers::get_clusters))
@@ -42,7 +39,7 @@ async fn main() {
     let addr = "0.0.0.0:3000".parse().unwrap();
     println!("Listening on {}", addr);
 
-    // Use hyper::Server instead of axum::Server.
+    // Use hyper::Server as Axum no longer exports a Server directly.
     hyper::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
