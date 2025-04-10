@@ -10,4 +10,4 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tower = "0.4"
 # Use tower-http v0.3 for the 'serve-dir' feature
-tower-http = { version = "0.3", features = ["serve-dir"] }
+tower-http = { version = "0.3", features = ["fs"] }
