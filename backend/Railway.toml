@@ -1,0 +1,6 @@
+# This assumes you want to build for x86_64-unknown-linux-musl (commonly used on Railway)
+[build]
+command = "cargo build --release --target x86_64-unknown-linux-musl"
+
+[deploy]
+command = "./target/x86_64-unknown-linux-musl/release/cluster_manager"
