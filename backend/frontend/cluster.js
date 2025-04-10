@@ -1,4 +1,4 @@
-// On page load, fetch the clusters
+// Fetch clusters on page load.
 fetch("/clusters")
   .then(res => res.json())
   .then(clusters => {
