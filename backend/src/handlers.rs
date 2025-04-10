@@ -31,6 +31,6 @@ pub async fn get_node_actions(Path(_id): Path<String>) -> Json<serde_json::Value
 
 pub async fn serve_frontend() -> Html<String> {
     let html = std::fs::read_to_string("frontend/index.html")
-        .unwrap_or_else(|_| "Could not load frontend".to_string());
+        .unwrap_or_else(|e| format!("Failed to load index.html: {}", e));
     Html(html)
 }
